@@ -1,0 +1,36 @@
+name: Weekly rooms-wanted scrape
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"   # Mondays 10:00 UTC, after the daily run has finished
+  workflow_dispatch:
+
+concurrency: spareroom-scrape
+
+permissions:
+  contents: write   # for the heartbeat commit below
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python scrape.py --ad-type wanted
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+      # GitHub pauses schedules on public repos after 60 days without activity.
+      # A weekly heartbeat commit keeps them running indefinitely.
+      - name: Heartbeat
+        if: always()
+        run: |
+          date -u > .heartbeat
+          git config user.name "hsh-bot"
+          git config user.email "hsh-bot@users.noreply.github.com"
+          git add .heartbeat
+          git commit -m "heartbeat" || true
+          git push || true
