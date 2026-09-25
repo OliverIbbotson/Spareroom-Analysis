@@ -1,0 +1,22 @@
+name: Daily rooms-offered scrape
+
+on:
+  schedule:
+    - cron: "30 3 * * *"   # 03:30 UTC daily; takes ~2 hours
+  workflow_dispatch:
+
+concurrency: spareroom-scrape   # never run two scrapes at once
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python scrape.py --ad-type offered
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
