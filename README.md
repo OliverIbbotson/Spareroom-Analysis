@@ -55,8 +55,19 @@ and weighted. Change the weights any time – the ranking updates instantly:
 | ease_of_letting | 25 | median days to let (x2), % let within 30 days, stale 60+ day stock, price-cut rate, days-to-let trend |
 | rent_growth | 20 | achieved rent growth (x2), asking rent growth, rises per cut, tenant budget headroom |
 | investor_momentum | 15 | growth in new adverts, trend in live-out landlord share, trend in 6+ bed HMOs |
-| management_opportunity | 15 | share of self-managing live-out landlords, low agent share, market size |
+| management_opportunity | 15 | share of self-managing live-out landlords, low agent share, market size, fragmented agent market (low HHI) |
+
+## Monthly PDF reports
+`report.py` builds a branded PDF for every town plus a national "Top HMO Markets" report.
+The **Monthly market reports** workflow runs on the 1st of each month (or on demand from the
+Actions tab); open the finished run and download the `market-reports` bundle at the bottom.
+
+    python report.py --all                 # everything
+    python report.py --town Derby          # one town
+    python report.py --national            # national report only
 
 ## Files
 - `scrape.py` – the scraper (`--dry-run`, `--area`, `--ad-type`, `--max-pages` for testing)
 - `schema.sql` – full database schema; safe to re-run
+- `report.py` – monthly PDF report generator
+- `brand/` – banner and logo used in the reports
