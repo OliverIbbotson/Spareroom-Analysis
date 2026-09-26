@@ -296,6 +296,7 @@ ST = {
     "cta": ParagraphStyle("cta", fontName="Helvetica-Bold", fontSize=12, leading=16, textColor=colors.white, alignment=TA_CENTER),
     "cta_s": ParagraphStyle("cta_s", fontName="Helvetica", fontSize=9.5, leading=13, textColor=colors.white, alignment=TA_CENTER),
 }
+ST["h1"].keepWithNext = ST["h2"].keepWithNext = 1  # headings always start on the same page as their chart
 
 
 def money(v):
