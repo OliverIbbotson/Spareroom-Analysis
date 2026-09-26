@@ -12,6 +12,7 @@ Usage:
 """
 import argparse, datetime as dt, io, json, os, re, statistics
 
+import requests
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -36,6 +37,16 @@ BLUE, LIGHT_BLUE, GREY, RED, GREEN = "#3E7CB1", "#9CC3E4", "#B8C2C8", "#D1495B",
 PALETTE = [NAVY, ORANGE, BLUE, LIGHT_BLUE, GREEN, GREY, RED]
 WEBSITE = "houseshareheroes.co.uk"
 SOURCE = "Source: Houseshare Heroes analysis of publicly advertised room listings."
+LR_SOURCE = ("House prices: HM Land Registry Price Paid Data, © Crown copyright and database right, "
+             "licensed under the Open Government Licence v3.0.")
+YIELD_ROOMS = 5          # rooms assumed for the indicative HMO yield
+MIN_SALES = 10           # minimum terraced/semi sales before a price or yield is shown
+WALES = {"Cardiff", "Swansea", "Newport"}
+SCOTLAND = {"Glasgow", "Edinburgh"}
+try:
+    COUNCIL = json.load(open(os.path.join(HERE, "council_rules.json")))
+except (OSError, ValueError):
+    COUNCIL = {"towns": {}}
 
 SUB_TOWNS = {"Long Eaton": ("Nottingham", ["NG10"]),
              "Burton upon Trent": ("Derby", ["DE13", "DE14", "DE15"])}
@@ -93,7 +104,8 @@ class Data:
             percentile_cont(0.5) within group (order by rate_pcm) filter (where last_seen = last_run and single_room and room_category='double') as double_pcm,
             percentile_cont(0.5) within group (order by rate_pcm) filter (where last_seen = last_run and single_room and room_category='single') as single_pcm,
             avg(bills_included::int) filter (where last_seen = last_run) as bills_share,
-            count(*) filter (where last_seen < last_run and last_seen >= last_run - 182) as lets_6m
+            count(*) filter (where last_seen < last_run and last_seen >= last_run - 182) as lets_6m,
+            percentile_cont(0.5) within group (order by rate_pcm) filter (where single_room and last_seen >= last_run - 90) as room_pcm
           from b where town = %(town)s""", p)
         cut = self.one(self.base_cte() + """
           select count(distinct c.listing_id)::numeric / nullif(count(distinct b.listing_id), 0) as cut_rate,
@@ -136,6 +148,16 @@ class Data:
           from b where town = %(town)s and postcode_district is not null
           group by 1 having count(*) filter (where last_seen >= last_run - 90) >= 5
           order by live desc""", {"area": parent_area(town), "town": town})
+
+    def house_prices(self, area_type, areas):
+        """Land Registry medians keyed by area; empty if landreg.py has not run yet."""
+        try:
+            with self.conn.transaction():
+                rows = self.q("select * from market.house_prices where area_type=%(t)s and area = any(%(a)s)",
+                              {"t": area_type, "a": list(areas)})
+        except psycopg.errors.UndefinedTable:
+            return {}
+        return {r["area"]: r for r in rows}
 
     def mix(self, town):
         p = {"area": parent_area(town), "town": town}
@@ -364,6 +386,144 @@ def cta_box():
     return KeepTogether([t])
 
 
+def house_price(hp):
+    """Typical terraced/semi price, or None when there are too few sales."""
+    if hp and hp.get("median_ts") and (hp.get("n_ts") or 0) >= MIN_SALES:
+        return float(hp["median_ts"])
+    return None
+
+
+def gross_yield(room_pcm, price):
+    if room_pcm is None or not price:
+        return None
+    return float(room_pcm) * YIELD_ROOMS * 12 / price
+
+
+A4_LABEL = {"citywide": "Yes – whole area", "partial": "Yes – parts of the area", "none known": "None in force",
+            "unconfirmed": "Not confirmed", "n/a": "Different system"}
+LIC_LABEL = {"yes": "Yes", "partial": "In some areas", "no": "No", "unconfirmed": "Not confirmed", "n/a": "Not used"}
+
+
+def esc(t):
+    return (t or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def council_box(town):
+    c = COUNCIL.get("towns", {}).get(town)
+    if not c:
+        return None
+    if town in WALES:
+        mandatory = ("Wales: mandatory HMO licensing covers HMOs of 3+ storeys with 5+ people; every landlord must "
+                     "register with Rent Smart Wales.")
+        planning = "Planning for small HMOs"
+    elif town in SCOTLAND:
+        mandatory = "Scotland: an HMO licence is needed for 3+ unrelated people sharing; landlords must also register."
+        planning = "Planning for HMOs"
+    else:
+        mandatory = "England: a licence is always needed for HMOs with 5+ people from 2+ households."
+        planning = "Article 4 (planning)"
+    rows = [
+        [Paragraph(planning, ST["cell"]), Paragraph(f"<b>{A4_LABEL.get(c['article4'], c['article4'])}</b>. {esc(c['article4_detail'])}", ST["cell"])],
+        [Paragraph("Additional licensing<br/>(smaller HMOs)", ST["cell"]),
+         Paragraph(f"<b>{LIC_LABEL.get(c['additional_licensing'], c['additional_licensing'])}</b>. {esc(c['additional_detail'])}", ST["cell"])],
+        [Paragraph("Selective licensing<br/>(all rentals)", ST["cell"]),
+         Paragraph(f"<b>{LIC_LABEL.get(c['selective_licensing'], c['selective_licensing'])}</b>. {esc(c['selective_detail'])}", ST["cell"])],
+        [Paragraph("Mandatory licensing", ST["cell"]), Paragraph(mandatory, ST["cell"])],
+    ]
+    if c.get("other_notes"):
+        rows.append([Paragraph("Worth knowing", ST["cell"]), Paragraph(esc(c["other_notes"]), ST["cell"])])
+    head = [[Paragraph(f"<font color='white'><b>Local HMO rules – {esc(c['council'])}</b></font>", ST["cell"]), ""]]
+    t = Table(head + rows, colWidths=[42 * mm, 128 * mm])
+    t.setStyle(TableStyle([
+        ("SPAN", (0, 0), (-1, 0)), ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(NAVY)),
+        ("LINEBELOW", (0, 0), (-1, 0), 3, colors.HexColor(ORANGE)),
+        ("BACKGROUND", (0, 1), (0, -1), colors.HexColor("#E8EEF3")),
+        ("ROWBACKGROUNDS", (1, 1), (1, -1), [colors.white, colors.HexColor("#F7F9FA")]),
+        ("LINEBELOW", (0, 1), (-1, -1), 0.5, colors.HexColor("#D5DDE3")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    src = c.get("sources", [])[:1]
+    note = Paragraph(f"Checked {COUNCIL.get('checked', '')} from council websites and landlord press. Rules change often – "
+                     f"always confirm with {esc(c['council'])} before buying or converting."
+                     + (f" Source: {esc(src[0])}" if src else ""), ST["small"])
+    return KeepTogether([t, Spacer(1, 2 * mm), note])
+
+
+VIEW_PROMPT = """You are writing the short "Our view" section of a monthly HMO (house share) market report for {town}, \
+published by Houseshare Heroes, an HMO management company. Readers are property investors and landlords.
+
+Use ONLY the facts below. Do not invent figures, place names, employers, universities or trends that are not listed. \
+Where data is missing or still building, say so briefly rather than guessing. This is a best-guess reading of the data, \
+so use hedged language ("suggests", "looks", "may"). UK English, plain words, no hype, no exclamation marks, \
+no financial advice or instructions to buy.
+
+Write exactly three short paragraphs, each on its own line, starting with these labels:
+WHAT THE DATA SAYS: (2-3 sentences on rents, speed of letting and demand compared with the national figures)
+WHO IT COULD SUIT: (1-2 sentences, e.g. yield-focused vs capital-growth investors, room type or area within the town)
+WATCH-OUTS: (1-2 sentences, including the local planning/licensing rules if relevant)
+Total 110-170 words.
+
+FACTS
+{facts}"""
+
+
+def our_view(facts, town):
+    """AI-assisted commentary. Returns [(label, text)] or [] if no API key / on any error."""
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        return []
+    try:
+        r = requests.post("https://api.anthropic.com/v1/messages", timeout=90, headers={
+            "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+            json={"model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5"), "max_tokens": 600,
+                  "messages": [{"role": "user", "content": VIEW_PROMPT.format(town=town, facts=facts)}]})
+        r.raise_for_status()
+        text = "".join(b.get("text", "") for b in r.json().get("content", []))
+    except Exception as e:  # never fail a report because commentary failed
+        print(f"  our view skipped for {town}: {e}")
+        return []
+    out = []
+    for line in text.splitlines():
+        line = line.strip().replace("**", "")
+        for label in ("WHAT THE DATA SAYS", "WHO IT COULD SUIT", "WATCH-OUTS"):
+            if line.upper().startswith(label + ":"):
+                out.append((label.capitalize(), line[len(label) + 1:].strip()))
+    return out if len(out) >= 2 else []
+
+
+def view_facts(town, h, bench, have_lets, pcs, hp_town, yld, tstats, rules):
+    f = [f"Town: {town}"]
+    f.append(f"Typical double room rent: {money(h.get('double_pcm'))} pcm (national median across tracked cities "
+             f"{money(bench.get('double'))})")
+    f.append(f"Typical single room rent: {money(h.get('single_pcm'))} pcm")
+    f.append(f"Rooms advertised now: {num(h.get('live_rooms'))}")
+    if have_lets:
+        f.append(f"Median days to let (6 months): {num(h.get('median_dtl'))} (national {num(bench.get('dtl'))})")
+        f.append(f"Share of rooms with a price cut while advertised: {pct(h.get('cut_rate'))}")
+    else:
+        f.append("Days-to-let and lets data: still building (tracking only started recently)")
+    if h.get("tpr") is not None:
+        f.append(f"Tenant 'room wanted' adverts per room advertised (wider area): {float(h['tpr']):.2f}")
+    if tstats and tstats.get("median_budget"):
+        f.append(f"Typical tenant budget: {money(tstats['median_budget'])} pcm")
+    if hp_town:
+        f.append(f"Typical terraced/semi house price (Land Registry, last 12 months): {money(hp_town)}")
+    if yld:
+        f.append(f"Indicative gross yield for a {YIELD_ROOMS}-room HMO before conversion costs: {yld * 100:.1f}%")
+    top = [p for p in pcs if p.get("median_pcm")][:8]
+    if top:
+        f.append("Postcode districts (rooms advertised / typical room rent / indicative yield): " + "; ".join(
+            f"{p['district']} {p['live']} / {money(p['median_pcm'])} / "
+            f"{(str(round(p['yield'] * 100, 1)) + '%') if p.get('yield') else 'n/a'}" for p in top))
+    if rules:
+        f.append(f"Article 4: {rules['article4']} - {rules['article4_detail']}")
+        f.append(f"Additional licensing: {rules['additional_licensing']} - {rules['additional_detail']}")
+        f.append(f"Selective licensing: {rules['selective_licensing']} - {rules['selective_detail']}")
+        if rules.get("other_notes"):
+            f.append(f"Other: {rules['other_notes']}")
+    return "\n".join("- " + x for x in f)
+
+
 class ReportDoc(BaseDocTemplate):
     def __init__(self, path, title, edition, sample=False):
         super().__init__(path, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
@@ -454,6 +614,15 @@ def town_report(db, town, path, edition, label=None, sample=False, bench=None):
     bench = bench or db.national_benchmarks()
     have_lets = (h.get("lets_6m") or 0) >= 30
     area_name = label or parent_area(town)
+    pcs = db.postcodes(town)
+    hp_d = db.house_prices("district", [p["district"] for p in pcs])
+    for p in pcs:
+        p["price"] = house_price(hp_d.get(p["district"]))
+        p["yield"] = gross_yield(p["median_pcm"], p["price"])
+    hp_row = db.house_prices("town", [town]).get(town)
+    hp_town = house_price(hp_row)
+    town_yield = gross_yield(h.get("room_pcm"), hp_town)
+    rules = COUNCIL.get("towns", {}).get(town)
 
     doc = ReportDoc(path, f"{name} HMO Market Report", edition, sample)
     s = [NextPageTemplate("body")]
@@ -469,6 +638,10 @@ def town_report(db, town, path, edition, label=None, sample=False, bench=None):
     ]))
     s += [Spacer(1, 8 * mm), Paragraph("Key takeaways", ST["h2"])]
     tk = takeaways(name, h, bench, monthly, area_name) if have_lets or h.get("double_pcm") else []
+    if hp_town:
+        tk.append(f"Terraced and semi-detached houses sold for a typical <b>{money(hp_town)}</b> over the last 12 months"
+                  + (f" – an indicative gross yield of <b>{town_yield * 100:.1f}%</b> if let as a {YIELD_ROOMS}-room HMO "
+                     f"at today's room rents (before conversion costs)." if town_yield else "."))
     for line in tk or ["Key takeaways will appear once enough data has been collected."]:
         s.append(Paragraph("• " + line, ST["body"]))
     s += [Spacer(1, 6 * mm), cta_box(), Spacer(1, 5 * mm),
@@ -499,17 +672,26 @@ def town_report(db, town, path, edition, label=None, sample=False, bench=None):
         s.append(building(first_run, "The rents-over-time chart"))
 
     # ---- postcodes
-    pcs = db.postcodes(town)
     if pcs:
         s += [CondPageBreak(120 * mm), Paragraph("Postcode by postcode", ST["h1"]),
               Paragraph("Typical rent by postcode district (single-room adverts, last 3 months)", ST["h2"])]
         top = [p for p in pcs if p["median_pcm"]][:14]
         top.sort(key=lambda p: -float(p["median_pcm"]))
         s.append(hbar([p["district"] for p in top], [float(p["median_pcm"]) for p in top], money=True))
-        s.append(data_table(["District", "Rooms advertised", "Lets (6 months)", "Typical rent", "Days to let"],
+        s.append(data_table(["District", "Rooms advertised", "Lets (6 months)", "Typical room rent", "Days to let",
+                             "Typical house price*", "Indicative gross yield*"],
                             [[p["district"], num(p["live"]), num(p["lets"]), money(p["median_pcm"]),
-                              num(p["median_dtl"]) if p["lets"] >= 10 else "–"] for p in pcs[:16]],
-                            [30, 35, 35, 35, 35]))
+                              num(p["median_dtl"]) if p["lets"] >= 10 else "–", money(p["price"]),
+                              pct(p["yield"], 1) if p["yield"] else "–"] for p in pcs[:16]],
+                            [20, 22, 22, 26, 20, 30, 30]))
+        if any(p["price"] for p in pcs):
+            s.append(Paragraph(f"* Typical sold price of terraced and semi-detached houses over the last 12 months "
+                               f"(districts with at least {MIN_SALES} sales). Indicative gross yield = typical room rent "
+                               f"x {YIELD_ROOMS} rooms x 12 ÷ house price. It ignores purchase costs, conversion, "
+                               f"licensing, bills, voids and management, so treat it as a way to compare districts, "
+                               f"not a forecast. " + LR_SOURCE, ST["small"]))
+        else:
+            s.append(Paragraph("* House prices and yields appear once Land Registry sales data has loaded.", ST["small"]))
 
     # ---- demand and speed
     s += [CondPageBreak(120 * mm), Paragraph("Demand and speed of letting", ST["h1"])]
@@ -585,6 +767,26 @@ def town_report(db, town, path, edition, label=None, sample=False, bench=None):
     else:
         s.append(building(first_run, "Rising areas (which compare two three-month periods)"))
 
+    # ---- local rules and our view
+    box = council_box(town) if not label else None
+    view = our_view(view_facts(name, h, bench, have_lets, pcs, hp_town, town_yield, tstats, rules), name) if not sample else []
+    if box or view:
+        s += [PageBreak(), Paragraph("Local rules and our view", ST["h1"])]
+        if box:
+            s += [Paragraph(f"Planning and licensing in {name}", ST["h2"]), box, Spacer(1, 5 * mm)]
+        if view:
+            vt = Table([[Paragraph("<b>Our view</b>", ST["h2"])]] +
+                       [[Paragraph(f"<b>{esc(lbl)}.</b> {esc(txt)}", ST["body"])] for lbl, txt in view],
+                       colWidths=[170 * mm])
+            vt.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFF4E5")),
+                                    ("LINEBEFORE", (0, 0), (0, -1), 4, colors.HexColor(ORANGE)),
+                                    ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                                    ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]))
+            s += [KeepTogether([vt]), Spacer(1, 2 * mm),
+                  Paragraph("AI-assisted commentary written from this report's figures – a starting point for your own "
+                            "research, not advice. Houseshare Heroes manages HMOs in the Midlands; views on other towns "
+                            "are based on the data only.", ST["small"])]
+
     # ---- method
     s += [CondPageBreak(75 * mm), Spacer(1, 6 * mm), cta_box(), Spacer(1, 5 * mm), Paragraph("About this report", ST["h2"]),
           Paragraph("Houseshare Heroes tracks publicly advertised rooms to rent every day. Each advert is followed from "
@@ -593,7 +795,7 @@ def town_report(db, town, path, edition, label=None, sample=False, bench=None):
                     "several rooms are excluded from room-type prices. En-suite and studio rooms are identified from "
                     "the advert headline and summary, so may be slightly under-counted. Tenant demand counts people "
                     "who have posted a 'room wanted' advert, so understates total demand; it is best used to compare "
-                    "areas and track changes over time. " + SOURCE +
+                    "areas and track changes over time. " + SOURCE + " " + LR_SOURCE +
                     " This report is general market information, not financial advice.", ST["small"])]
     doc.build(s)
 
