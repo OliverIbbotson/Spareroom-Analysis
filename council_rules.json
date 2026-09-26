@@ -1,0 +1,799 @@
+{
+  "_about": "Local HMO planning (Article 4) and licensing rules per town, researched from council websites and landlord press. Shown in each town report as a 'Local HMO rules' box. Rules change often - re-check and update 'checked' at least every six months.",
+  "checked": "September 2026",
+  "towns": {
+    "Birmingham": {
+      "council": "Birmingham City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide Article 4 for C3 to C4 small HMOs since 8 June 2020.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide scheme for 3-4 person HMOs, 5 June 2023 to around June 2028.",
+      "selective_licensing": "partial",
+      "selective_detail": "25 of 69 wards from 5 June 2023 for 5 years - use the council's ward checker.",
+      "other_notes": "Fees: additional HMO licence £755; selective licence £700.",
+      "sources": [
+        "https://www.birmingham.gov.uk/info/20175/private_housing/2648/additional_licensing_for_hmos",
+        "https://www.birmingham.gov.uk/info/20175/private_housing/2649/selective_licensing"
+      ],
+      "confidence": "high"
+    },
+    "Manchester": {
+      "council": "Manchester City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide Article 4 for 3-6 person HMOs since 8 October 2011; Core Strategy Policy H11 restricts clustering.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing scheme - mandatory licensing (5+ people) only.",
+      "selective_licensing": "partial",
+      "selective_detail": "Areas incl. Clayton/Openshaw, Harpurhey, Gorton, Longsight, Rusholme, Levenshulme, Moss Side, Cheetham, Crumpsall (schemes 2022-2030).",
+      "other_notes": "",
+      "sources": [
+        "https://www.manchester.gov.uk/info/500207/planning_and_regeneration/4847/article_4_direction_changing_the_use_of_your_property"
+      ],
+      "confidence": "medium"
+    },
+    "Leeds": {
+      "council": "Leeds City Council",
+      "article4": "partial",
+      "article4_detail": "Covers inner areas incl. Headingley, Hyde Park & Woodhouse, Kirkstall, Armley, Beeston, Harehills and Chapel Allerton.",
+      "additional_licensing": "no",
+      "additional_detail": "No current additional HMO licensing scheme - mandatory licensing only.",
+      "selective_licensing": "partial",
+      "selective_detail": "Parts of Armley, Beeston & Holbeck, Burmantofts, Harehills, Hunslet & Riverside, Farnley & Wortley, Feb 2026 to Feb 2031.",
+      "other_notes": "Selective licence fee around £1,100.",
+      "sources": [
+        "https://www.leeds.gov.uk/planning/planning-policy/supplementary-planning-documents-and-guidance/houses-in-multiple-occupation-article-4-direction",
+        "https://www.leeds.gov.uk/housing/information-for-landlords/selective-licensing"
+      ],
+      "confidence": "medium"
+    },
+    "Liverpool": {
+      "council": "Liverpool City Council",
+      "article4": "partial",
+      "article4_detail": "11 wards (3+ person HMOs) plus The Dales, in force 17 June 2021.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing scheme - mandatory licensing only.",
+      "selective_licensing": "partial",
+      "selective_detail": "16 wards, April 2022 to March 2027. Consultation (to 5 Oct 2026) includes a possible return to citywide licensing.",
+      "other_notes": "Proposed selective licence fee for the next scheme around £995.",
+      "sources": [
+        "https://liverpool.gov.uk/planning-and-building-control/planning-permission/planning-permission-for-hmos/",
+        "https://liverpool.gov.uk/business/licences-and-permits/landlord-licensing/selective-licensing-scheme/"
+      ],
+      "confidence": "high"
+    },
+    "Sheffield": {
+      "council": "Sheffield City Council",
+      "article4": "partial",
+      "article4_detail": "West Sheffield area (Broomhill, Crookes, Walkley and surrounds) since December 2011.",
+      "additional_licensing": "no",
+      "additional_detail": "None at present. In March 2026 the council voted to develop a citywide landlord licensing scheme - no dates yet.",
+      "selective_licensing": "no",
+      "selective_detail": "Earlier area schemes ended by early 2024; a new citywide scheme is being developed.",
+      "other_notes": "HMO licence holders must complete landlord training within a year of the licence being issued.",
+      "sources": [
+        "https://www.sheffield.gov.uk/planning-development/planning-permission-hmo",
+        "https://www.sheffield.gov.uk/housing/houses-multiple-occupation/apply"
+      ],
+      "confidence": "medium"
+    },
+    "Bristol": {
+      "council": "Bristol City Council",
+      "article4": "partial",
+      "article4_detail": "Covers central wards and large parts of north, south and east Bristol; further wards added from 1 January 2027.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide additional HMO licensing from 6 August 2024, running to around 2029.",
+      "selective_licensing": "partial",
+      "selective_detail": "Bishopston & Ashley Down, Cotham and Easton wards from August 2024.",
+      "other_notes": "Article 4 extensions take effect 1 January 2027.",
+      "sources": [
+        "https://www.bristol.gov.uk/business/licences-and-permits/property-licences/types-of-licence",
+        "https://www.bristol.gov.uk/residents/planning-and-building-regulations/planning-applications/check-if-you-need-planning-permission/restrictions-on-permitted-development-article-4-directions"
+      ],
+      "confidence": "high"
+    },
+    "Nottingham": {
+      "council": "Nottingham City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide Article 4 for 3-6 person HMOs since 2012; the council says new permissions are 'highly unlikely' in many areas.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for 3+ occupants in 2+ households, January 2024 to December 2028.",
+      "selective_licensing": "partial",
+      "selective_detail": "16 of 20 wards, December 2023 to November 2028.",
+      "other_notes": "Additional licence fee around £1,607 (£1,210 accredited).",
+      "sources": [
+        "https://www.nottinghamcity.gov.uk/hmopermitteddevelopment",
+        "https://www.nottinghamcity.gov.uk/housinglicensing"
+      ],
+      "confidence": "high"
+    },
+    "Leicester": {
+      "council": "Leicester City Council",
+      "article4": "partial",
+      "article4_detail": "Defined areas since 2014, widened November 2022; new HMOs usually refused there - check the council map.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing scheme - mandatory licensing only.",
+      "selective_licensing": "partial",
+      "selective_detail": "Parts of Braunstone Park & Rowley Fields, Fosse, Westcotes, Stoneygate and Saffron, October 2022 to October 2027.",
+      "other_notes": "Selective licence around £1,290.",
+      "sources": [
+        "https://www.leicester.gov.uk/planning-environment-and-building-control/planning-applications/check-if-you-need-planning-permission/article-4-directions-leicester",
+        "https://www.leicester.gov.uk/housing/landlords/property-licensing/selective-licensing"
+      ],
+      "confidence": "medium"
+    },
+    "Coventry": {
+      "council": "Coventry City Council",
+      "article4": "partial",
+      "article4_detail": "11 wards incl. St Michael's, Earlsdon, Foleshill, Radford, Lower/Upper Stoke, Cheylesmore, Westwood, Whoberley - since September 2023.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide scheme for 3-4 person HMOs, May 2025 to May 2030.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.coventry.gov.uk/housing-enforcement/additional-licensing-scheme-2025",
+        "https://www.coventry.gov.uk/housing-enforcement/property-licensing"
+      ],
+      "confidence": "high"
+    },
+    "Derby": {
+      "council": "Derby City Council",
+      "article4": "partial",
+      "article4_detail": "All of Arboretum ward plus inner-ring-road parts of Abbey, Alvaston North, Darley, Mackworth, Normanton and Sinfin - since 3 May 2025.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing - mandatory licensing (5+ people) only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "The council has reported a backlog of HMO licence applications.",
+      "sources": [
+        "https://www.derby.gov.uk/trading-standards-environmental-health/environmental-health/housing-standards/houses-in-multiple-occupation/about/",
+        "https://letstalk.derby.gov.uk/hmo-proposed-article-4-direction"
+      ],
+      "confidence": "high"
+    },
+    "Stoke-on-Trent": {
+      "council": "Stoke-on-Trent City Council",
+      "article4": "none known",
+      "article4_detail": "None in force, but a citywide Article 4 with ward caps was proposed in August 2026.",
+      "additional_licensing": "no",
+      "additional_detail": "A citywide scheme for smaller HMOs is proposed and consulting (2026) - not yet in force.",
+      "selective_licensing": "no",
+      "selective_detail": "No active scheme found.",
+      "other_notes": "Rules are changing fast here - check with the council before buying.",
+      "sources": [
+        "https://thenegotiator.co.uk/news/regulation-law-news/labour-run-city-launches-huge-crackdown-on-hmo-sector/"
+      ],
+      "confidence": "medium"
+    },
+    "Lincoln": {
+      "council": "City of Lincoln Council",
+      "article4": "citywide",
+      "article4_detail": "Covers the whole City of Lincoln area since 1 March 2016.",
+      "additional_licensing": "unconfirmed",
+      "additional_detail": "No scheme found - appears to be mandatory licensing only.",
+      "selective_licensing": "unconfirmed",
+      "selective_detail": "No current scheme found.",
+      "other_notes": "An HMO planning document controls how many HMOs are allowed in an area.",
+      "sources": [
+        "https://www.lincoln.gov.uk/planning/article-4-directions"
+      ],
+      "confidence": "medium"
+    },
+    "Dudley": {
+      "council": "Dudley Metropolitan Borough Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide Article 4 for C3 to C4 since 15 September 2023.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing - mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.dudley.gov.uk/residents/planning/planning-policy/dudley-local-plan/hmo-article-4-direction/"
+      ],
+      "confidence": "medium"
+    },
+    "Wolverhampton": {
+      "council": "City of Wolverhampton Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide small-HMO Article 4 since 14 September 2017.",
+      "additional_licensing": "no",
+      "additional_detail": "3-4 tenant HMOs do not need a licence - mandatory licensing (5+) only.",
+      "selective_licensing": "unconfirmed",
+      "selective_detail": "No scheme found on the council website.",
+      "other_notes": "Mandatory HMO licence around £1,550 in two parts.",
+      "sources": [
+        "https://www.wolverhampton.gov.uk/planning/planning-policies/small-houses-multiple-occupation-article-4-direction",
+        "https://www.wolverhampton.gov.uk/housing/house-multiple-occupation-licence"
+      ],
+      "confidence": "medium"
+    },
+    "Walsall": {
+      "council": "Walsall Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide Article 4 since 1 October 2025.",
+      "additional_licensing": "partial",
+      "additional_detail": "Palfrey, Paddock, Pleck and St Matthews wards (3+ tenants), September 2022 to August 2027.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://go.walsall.gov.uk/planning-and-building-control/planning-policy/houses-multiple-occupation-hmo-consultation-article-4",
+        "https://go.walsall.gov.uk/housing/information-landlords/houses-multiple-occupation-hmo/additional-hmo-licensing"
+      ],
+      "confidence": "high"
+    },
+    "Newcastle upon Tyne": {
+      "council": "Newcastle City Council",
+      "article4": "partial",
+      "article4_detail": "Parts of Heaton, Jesmond, South Gosforth, Sandyford, Spital Tongues and surrounding areas (2011-2013).",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for HMOs of 3+ people in 2+ households; current scheme from April 2025.",
+      "selective_licensing": "partial",
+      "selective_detail": "Several areas incl. parts of Benwell, Cowgate, West End; Byker/High Cross from October 2026.",
+      "other_notes": "HMO planning applications judged against the 'Maintaining Sustainable Communities' guidance.",
+      "sources": [
+        "https://www.newcastle.gov.uk/services/planning-building-and-development/planning-guidance/houses-multiple-occupation-hmos",
+        "https://new.newcastle.gov.uk/property-licensing-schemes-newcastle/additional-licensing"
+      ],
+      "confidence": "high"
+    },
+    "Sunderland": {
+      "council": "Sunderland City Council",
+      "article4": "partial",
+      "article4_detail": "Former Barnes, Hendon, Millfield, St Michael's and St Peter's wards since December 2013.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional licensing scheme.",
+      "selective_licensing": "no",
+      "selective_detail": "No current selective licensing scheme (earlier scheme lapsed).",
+      "other_notes": "",
+      "sources": [
+        "https://www.sunderland.gov.uk/hmo"
+      ],
+      "confidence": "high"
+    },
+    "Middlesbrough": {
+      "council": "Middlesbrough Council",
+      "article4": "citywide",
+      "article4_detail": "Whole borough (excluding the Development Corporation area) since 8 February 2025.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional HMO licensing; small HMOs in selective areas need a selective licence.",
+      "selective_licensing": "partial",
+      "selective_detail": "North Ormesby and Newport areas.",
+      "other_notes": "",
+      "sources": [
+        "https://www.middlesbrough.gov.uk/planning-and-development/planning-for-houses-in-multiple-occupation/",
+        "https://www.middlesbrough.gov.uk/housing/landlords/selective-landlord-licensing-scheme/"
+      ],
+      "confidence": "high"
+    },
+    "Hull": {
+      "council": "Hull City Council",
+      "article4": "partial",
+      "article4_detail": "Inner areas incl. Beverley Road South, Spring Bank, Anlaby Road, Hessle Road and Holderness Road West.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional licensing scheme found.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme found.",
+      "other_notes": "Planning guidance resists HMOs that would sandwich a family home or create 3+ adjacent HMOs.",
+      "sources": [
+        "https://www.hull.gov.uk/private-landlords/houses-multiple-occupation/3"
+      ],
+      "confidence": "medium"
+    },
+    "Bradford": {
+      "council": "City of Bradford Metropolitan District Council",
+      "article4": "none known",
+      "article4_detail": "No HMO Article 4 at present; a district-wide Article 4 motion is due at full council in October 2026.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No active scheme found.",
+      "other_notes": "Watch the October 2026 council decision on Article 4.",
+      "sources": [
+        "https://www.bradford.gov.uk/housing/houses-in-multiple-occupation/houses-in-multiple-occupation/",
+        "https://www.landlordzone.co.uk/news/two-more-councils-propose-hmo-clampdown"
+      ],
+      "confidence": "medium"
+    },
+    "Huddersfield": {
+      "council": "Kirklees Council",
+      "article4": "none known",
+      "article4_detail": "No HMO Article 4 found.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing (5+ people) only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme found.",
+      "other_notes": "The council reports delays on HMO licence applications.",
+      "sources": [
+        "https://www.kirklees.gov.uk/beta/housing/houses-in-multiple-occupation.aspx"
+      ],
+      "confidence": "medium"
+    },
+    "Wakefield": {
+      "council": "Wakefield Council",
+      "article4": "partial",
+      "article4_detail": "Six areas since 24 October 2025: Castleford Centre North, Smawthorne, Agbrigg, College Grove, Lincoln Street, Peterson Road.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Voluntary Wakefield Responsible Landlords Scheme.",
+      "sources": [
+        "https://www.wakefield.gov.uk/housing/information-for-landlords"
+      ],
+      "confidence": "medium"
+    },
+    "York": {
+      "council": "City of York Council",
+      "article4": "partial",
+      "article4_detail": "Covers the main urban area of York, not the outer villages.",
+      "additional_licensing": "partial",
+      "additional_detail": "Eight wards incl. Clifton, Fishergate, Fulford & Heslington, Guildhall, Heworth, Hull Road - 3-4 person HMOs since April 2023.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Planning guidance limits HMO concentration by neighbourhood and street.",
+      "sources": [
+        "https://www.york.gov.uk/planning-advice-guidance/distribution-houses-multiple-occupation",
+        "https://www.york.gov.uk/HMOLicensing"
+      ],
+      "confidence": "high"
+    },
+    "Doncaster": {
+      "council": "City of Doncaster Council",
+      "article4": "partial",
+      "article4_detail": "Central Doncaster since October 2019 (Town, Town Fields, Wheatley, Hexthorpe, Balby, Intake, Belle Vue).",
+      "additional_licensing": "no",
+      "additional_detail": "The 2018-2023 central scheme has expired.",
+      "selective_licensing": "partial",
+      "selective_detail": "Hexthorpe only, March 2022 to February 2027.",
+      "other_notes": "",
+      "sources": [
+        "https://doncaster.gov.uk/services/housing/landlord-licences"
+      ],
+      "confidence": "medium"
+    },
+    "Preston": {
+      "council": "Preston City Council",
+      "article4": "partial",
+      "article4_detail": "Seven inner wards since 2012; a citywide direction would start 15 February 2027 if confirmed.",
+      "additional_licensing": "no",
+      "additional_detail": "No additional licensing scheme.",
+      "selective_licensing": "no",
+      "selective_detail": "Proposed for City Centre, St Matthew's and Plungington - consultation to 11 October 2026.",
+      "other_notes": "",
+      "sources": [
+        "https://www.preston.gov.uk/article/12132/Article-4-Direction-on-HMOs",
+        "https://www.preston.gov.uk/selective-licensing-consultation"
+      ],
+      "confidence": "high"
+    },
+    "Bolton": {
+      "council": "Bolton Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide Article 4 since June 2025 - planning permission needed for all new HMOs.",
+      "additional_licensing": "no",
+      "additional_detail": "Borough-wide scheme for 3+ person HMOs approved August 2026, expected to start early 2027 (around £1,211 for 5 years).",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Additional licensing coming in 2027.",
+      "sources": [
+        "https://www.bolton.gov.uk/news/article/2094/bolton-introduces-minimum-quality-standards-for-hmos"
+      ],
+      "confidence": "high"
+    },
+    "Blackpool": {
+      "council": "Blackpool Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide Article 4 since 3 October 2022.",
+      "additional_licensing": "unconfirmed",
+      "additional_detail": "Current status unclear - check with the council.",
+      "selective_licensing": "partial",
+      "selective_detail": "Inner-area scheme from April 2025 across eight central wards.",
+      "other_notes": "",
+      "sources": [
+        "https://www.blackpool.gov.uk/Residents/Planning-environment-and-community/Planning/Article-4-directions/HMO/Article-4-Direction-HMO.aspx",
+        "https://www.blackpool.gov.uk/business/licensing-and-permits/housing-licences/selective-licensing"
+      ],
+      "confidence": "medium"
+    },
+    "Stockport": {
+      "council": "Stockport Council",
+      "article4": "none known",
+      "article4_detail": "Cabinet approved a borough-wide immediate Article 4 on 15 September 2026 - may take effect at very short notice.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Check Article 4 status before buying.",
+      "sources": [
+        "https://democracy.stockport.gov.uk/mgDecisionDetails.aspx?IId=93470"
+      ],
+      "confidence": "medium"
+    },
+    "Oldham": {
+      "council": "Oldham Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide Article 4 since 1 January 2026.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing (5+ people) only.",
+      "selective_licensing": "partial",
+      "selective_detail": "Designated areas across about 11 wards, July 2022 to July 2027.",
+      "other_notes": "",
+      "sources": [
+        "https://www.oldham.gov.uk/article_4_direction",
+        "https://www.oldham.gov.uk/info/201198/information_for_landlords/1450/selective_licensing_of_private_landlords"
+      ],
+      "confidence": "medium"
+    },
+    "Warrington": {
+      "council": "Warrington Borough Council",
+      "article4": "citywide",
+      "article4_detail": "Six central wards confirmed May 2026; a borough-wide immediate direction started 25 September 2026.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "New HMO planning guidance with space standards (2026).",
+      "sources": [
+        "https://www.warrington.gov.uk/article4-hmo"
+      ],
+      "confidence": "high"
+    },
+    "Chester": {
+      "council": "Cheshire West and Chester Council",
+      "article4": "partial",
+      "article4_detail": "Garden Quarter area of Chester only, since July 2013.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Local Plan policy DM28 controls HMO concentration.",
+      "sources": [
+        "https://www.cheshirewestandchester.gov.uk/your-council/policies-and-performance/council-plans-policies-and-strategies/planning-policy/article-4-direction-garden-quarter"
+      ],
+      "confidence": "medium"
+    },
+    "Telford": {
+      "council": "Telford & Wrekin Council",
+      "article4": "citywide",
+      "article4_detail": "Borough-wide direction confirmed February 2026, in force from 27 February 2027.",
+      "additional_licensing": "no",
+      "additional_detail": "A scheme due August 2026 was revoked in September 2026 after a legal challenge; to be reviewed in 2027.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Small HMO conversions remain permitted development until 27 February 2027.",
+      "sources": [
+        "https://www.telford.gov.uk/planning-and-building-control/planning-applications-and-advice-appeals-enforcement-and-guidance/article-4-direction/"
+      ],
+      "confidence": "medium"
+    },
+    "Worcester": {
+      "council": "Worcester City Council",
+      "article4": "citywide",
+      "article4_detail": "All wards since 1 July 2014.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for HMOs of 3+ people in 2+ households, extended to 2030.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.worcester.gov.uk/planning/planning-policy/article-4-directions",
+        "https://www.worcester.gov.uk/housing/landlord-advice/additional-licensing-of-hmos"
+      ],
+      "confidence": "medium"
+    },
+    "Gloucester": {
+      "council": "Gloucester City Council",
+      "article4": "partial",
+      "article4_detail": "Six wards incl. Kingsholm & Wotton, Westgate, Barton & Tredworth - in force from 3 March 2027.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide scheme for 3-4 person HMOs from 21 September 2026.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.gloucester.gov.uk/planning-development/article-4-direction-consultation/"
+      ],
+      "confidence": "high"
+    },
+    "Northampton": {
+      "council": "West Northamptonshire Council",
+      "article4": "citywide",
+      "article4_detail": "The whole former Northampton borough area is covered.",
+      "additional_licensing": "partial",
+      "additional_detail": "Designated area of Northampton for 3-4 occupier HMOs, February 2025 to February 2030.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Planning policy limits HMOs to 10% concentration.",
+      "sources": [
+        "https://www.westnorthants.gov.uk/designated-heritage-assets/article-4-directions/heritage-and-non-heritage-article-4s-and-local"
+      ],
+      "confidence": "medium"
+    },
+    "Peterborough": {
+      "council": "Peterborough City Council",
+      "article4": "none known",
+      "article4_detail": "A trial direction (Fletton, Woodston, Hampton, Park) expired January 2026; the council is considering reinstating it.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for 3-4 person HMOs, January 2026 to January 2031.",
+      "selective_licensing": "partial",
+      "selective_detail": "10 wards incl. Central, East, North, Park, Bretton, Fletton & Woodston, March 2024 to March 2029.",
+      "other_notes": "",
+      "sources": [
+        "https://www.peterborough.gov.uk/residents/housing/houses-in-multiple-occupation/additional-hmo-licensing",
+        "https://www.peterborough.gov.uk/residents/housing/selective-licensing"
+      ],
+      "confidence": "high"
+    },
+    "Milton Keynes": {
+      "council": "Milton Keynes City Council",
+      "article4": "citywide",
+      "article4_detail": "Whole borough since December 2011.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.milton-keynes.gov.uk/planning-and-building-control/planning-policy/article-4-directions-milton-keynes"
+      ],
+      "confidence": "medium"
+    },
+    "Luton": {
+      "council": "Luton Borough Council",
+      "article4": "none known",
+      "article4_detail": "No Article 4 yet; the council is gathering evidence for one.",
+      "additional_licensing": "yes",
+      "additional_detail": "Borough-wide for 3-4 person HMOs since February 2024 (applications currently paused).",
+      "selective_licensing": "partial",
+      "selective_detail": "Town centre and Park Town areas since June 2026.",
+      "other_notes": "",
+      "sources": [
+        "https://www.luton.gov.uk/housing/private-tenants-homeowners-landlords/landlords/additional-licensing",
+        "https://www.luton.gov.uk/selectivelicensing"
+      ],
+      "confidence": "high"
+    },
+    "Reading": {
+      "council": "Reading Borough Council",
+      "article4": "partial",
+      "article4_detail": "Parts of Park, Redlands and Katesgrove wards, plus Jesse Terrace.",
+      "additional_licensing": "yes",
+      "additional_detail": "Borough-wide for 3+ person HMOs, March 2026 to February 2031.",
+      "selective_licensing": "no",
+      "selective_detail": "None yet - planned for Battle ward, possibly Park and Redlands later.",
+      "other_notes": "",
+      "sources": [
+        "https://www.reading.gov.uk/planning-and-building-control/article-4-directions/"
+      ],
+      "confidence": "high"
+    },
+    "Oxford": {
+      "council": "Oxford City Council",
+      "article4": "citywide",
+      "article4_detail": "Whole city since February 2012.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for all HMOs; new five-year scheme from June 2026.",
+      "selective_licensing": "yes",
+      "selective_detail": "Citywide since September 2022 (to around 2027).",
+      "other_notes": "Every HMO in Oxford needs a licence.",
+      "sources": [
+        "https://www.oxford.gov.uk/planning-policy/planning-control-houses-multiple-occupation",
+        "https://www.oxford.gov.uk/private-renting/quick-reference-guide-property-licensing"
+      ],
+      "confidence": "high"
+    },
+    "Cambridge": {
+      "council": "Cambridge City Council",
+      "article4": "none known",
+      "article4_detail": "No HMO Article 4; a cabinet report on one is expected in autumn 2026.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.cambridge.gov.uk/licensing-of-houses-in-multiple-occupation"
+      ],
+      "confidence": "medium"
+    },
+    "Norwich": {
+      "council": "Norwich City Council",
+      "article4": "none known",
+      "article4_detail": "No HMO Article 4 found.",
+      "additional_licensing": "no",
+      "additional_detail": "Citywide scheme going to consultation from September 2026 (proposed fee around £1,000).",
+      "selective_licensing": "no",
+      "selective_detail": "Proposed for Nelson, Mile Cross, Sewell and Town Close wards in the same consultation.",
+      "other_notes": "",
+      "sources": [
+        "https://gettalking.norwich.gov.uk/hmo"
+      ],
+      "confidence": "medium"
+    },
+    "Ipswich": {
+      "council": "Ipswich Borough Council",
+      "article4": "partial",
+      "article4_detail": "Parts of 12 wards since June 2024, incl. St Margaret's, Westgate, Gainsborough, Priory Heath, Alexandra, Bridge.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.ipswich.gov.uk/planning-and-building-control/planning-policy/article-4-direction-houses-multiple-occupation"
+      ],
+      "confidence": "high"
+    },
+    "Southampton": {
+      "council": "Southampton City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide Article 4 since March 2012.",
+      "additional_licensing": "partial",
+      "additional_detail": "Nine wards incl. Bargate, Bassett, Bevois, Portswood, Shirley, Swaythling, October 2025 to September 2030.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.southampton.gov.uk/planning/planning-permission/apply-planning-permission/apply-hmo/"
+      ],
+      "confidence": "medium"
+    },
+    "Portsmouth": {
+      "council": "Portsmouth City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide - planning permission needed for all new HMOs.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for 3-4 occupants, September 2023 to August 2028.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.portsmouth.gov.uk/services/housing/landlords/houses-in-multiple-occupation/additional-hmo-licence/"
+      ],
+      "confidence": "medium"
+    },
+    "Brighton": {
+      "council": "Brighton & Hove City Council",
+      "article4": "citywide",
+      "article4_detail": "Citywide since June 2020 (central wards since 2013).",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for 3+ people in 2+ households, July 2024 to June 2029.",
+      "selective_licensing": "partial",
+      "selective_detail": "Several areas from September 2024, with Central Hove and Regency added from October 2026.",
+      "other_notes": "",
+      "sources": [
+        "https://www.brighton-hove.gov.uk/planning/planning-applications/planning-permission-houses-multiple-occupation",
+        "https://www.brighton-hove.gov.uk/news/2024/city-wide-hmo-additional-licensing-scheme-live"
+      ],
+      "confidence": "high"
+    },
+    "Exeter": {
+      "council": "Exeter City Council",
+      "article4": "partial",
+      "article4_detail": "Areas around the university campuses, expanded December 2024.",
+      "additional_licensing": "no",
+      "additional_detail": "Expired in 2020 - mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://exeter.gov.uk/planning-services/planning-policy/supplementary-planning-documents/hmo-including-class-c4-uses-spd-and-article-4-direction/"
+      ],
+      "confidence": "high"
+    },
+    "Plymouth": {
+      "council": "Plymouth City Council",
+      "article4": "partial",
+      "article4_detail": "11 neighbourhoods since 2012 incl. Mutley & Greenbank, City Centre, Stoke, Stonehouse, Peverell, Lipson & Laira.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://www.plymouth.gov.uk/planning-permission-and-houses-multiple-occupation-hmo"
+      ],
+      "confidence": "medium"
+    },
+    "Cardiff": {
+      "council": "Cardiff Council",
+      "article4": "n/a",
+      "article4_detail": "Wales: every C3 to C4 change needs planning permission; refusal likely above 20% concentration in Cathays/Plasnewydd, 10% elsewhere.",
+      "additional_licensing": "partial",
+      "additional_detail": "Cathays and Plasnewydd wards.",
+      "selective_licensing": "no",
+      "selective_detail": "Not used; Rent Smart Wales registration applies to all lets.",
+      "other_notes": "",
+      "sources": [
+        "https://www.srs.wales/en/Environmental-Health/Housing/HMO-Licensing/HMO-Licensing-in-Cardiff.aspx"
+      ],
+      "confidence": "medium"
+    },
+    "Swansea": {
+      "council": "Swansea Council",
+      "article4": "n/a",
+      "article4_detail": "Wales: planning permission needed for all small HMO changes of use.",
+      "additional_licensing": "partial",
+      "additional_detail": "All HMOs in Castle, Uplands, St Thomas and Waterfront wards from February 2026.",
+      "selective_licensing": "no",
+      "selective_detail": "Not used; Rent Smart Wales registration applies to all lets.",
+      "other_notes": "",
+      "sources": [
+        "https://swansea.gov.uk/article/41182/Changes-to-HMO-Licensing-in-Swansea-in-2026"
+      ],
+      "confidence": "high"
+    },
+    "Newport": {
+      "council": "Newport City Council",
+      "article4": "n/a",
+      "article4_detail": "Wales: planning permission needed for all small HMO changes of use.",
+      "additional_licensing": "yes",
+      "additional_detail": "Citywide for 3+ people in 2+ households, February 2025 to February 2030.",
+      "selective_licensing": "no",
+      "selective_detail": "Not used; Rent Smart Wales registration applies to all lets.",
+      "other_notes": "",
+      "sources": [
+        "https://www.newport.gov.uk/housing/houses-multiple-occupation-hmo/hmo-additional-licensing-scheme"
+      ],
+      "confidence": "high"
+    },
+    "Glasgow": {
+      "council": "Glasgow City Council",
+      "article4": "n/a",
+      "article4_detail": "Scotland: planning controls HMO concentration (around 5% per street/block); Hillhead and Woodlands closed to new HMOs.",
+      "additional_licensing": "yes",
+      "additional_detail": "Scotland-wide: HMO licence needed for 3+ unrelated occupants.",
+      "selective_licensing": "n/a",
+      "selective_detail": "Not used in Scotland; landlord registration applies instead.",
+      "other_notes": "",
+      "sources": [
+        "https://www.glasgow.gov.uk/article/3467/HMO-Licence"
+      ],
+      "confidence": "high"
+    },
+    "Edinburgh": {
+      "council": "City of Edinburgh Council",
+      "article4": "n/a",
+      "article4_detail": "Scotland: planning needed where more than 5 unrelated people share; assessed case by case.",
+      "additional_licensing": "yes",
+      "additional_detail": "Scotland-wide: HMO licence needed for 3+ unrelated occupants.",
+      "selective_licensing": "n/a",
+      "selective_detail": "Not used in Scotland; landlord registration applies instead.",
+      "other_notes": "Whole city is a short-term let control area.",
+      "sources": [
+        "https://www.edinburgh.gov.uk/directory-record/1099558/houses-in-multiple-occupation-hmo-licence"
+      ],
+      "confidence": "medium"
+    },
+    "Long Eaton": {
+      "council": "Erewash Borough Council",
+      "article4": "partial",
+      "article4_detail": "Confirmed March 2026, in force from 6 March 2027 - covers large parts of Long Eaton, Ilkeston, Sawley and Sandiacre.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "Small HMO conversions remain permitted development until 6 March 2027.",
+      "sources": [
+        "https://www.erewash.gov.uk/planning/planning-information/proposed-article-4-direction"
+      ],
+      "confidence": "high"
+    },
+    "Burton upon Trent": {
+      "council": "East Staffordshire Borough Council",
+      "article4": "partial",
+      "article4_detail": "Mapped area of Burton since April 2023.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "partial",
+      "selective_detail": "Anglesey, Burton & Eton and Shobnall wards, September 2022 to September 2027.",
+      "other_notes": "",
+      "sources": [
+        "https://www.eaststaffsbc.gov.uk/housing-and-property/landlords/selective-licensing-scheme"
+      ],
+      "confidence": "medium"
+    }
+  }
+}
