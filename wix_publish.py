@@ -128,7 +128,7 @@ def main():
         wix.upsert(slug(r["area"]), {
             "title": title, "area": r["area"], "edition": manifest["edition"],
             "pdfUrl": f.get("url"), "national": r["national"],
-            "published": {"$date": today + "T00:00:00.000Z"},
+            "published": today,
         })
         print("published", title, "->", f.get("url"))
 
