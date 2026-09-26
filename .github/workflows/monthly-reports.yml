@@ -17,6 +17,11 @@ jobs:
       - run: python report.py --all
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Publish to Wix
+        run: python wix_publish.py
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+          WIX_SITE_ID: ${{ secrets.WIX_SITE_ID }}
       # PDFs are kept as a downloadable bundle on the run page (not committed to the
       # public repo, so the lead-magnet downloads stay behind your Wix form).
       - uses: actions/upload-artifact@v4
