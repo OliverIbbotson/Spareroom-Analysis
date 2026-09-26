@@ -66,6 +66,18 @@ Actions tab); open the finished run and download the `market-reports` bundle at 
     python report.py --town Derby          # one town
     python report.py --national            # national report only
 
+## House prices, local rules and "Our view"
+- `landreg.py` runs first in the monthly workflow. It downloads HM Land Registry Price Paid Data
+  (this year and last), keeps standard sales from the last 12 months and stores median prices per
+  postcode district and town in `market.house_prices`. Reports then show a typical terraced/semi
+  price and an indicative gross yield (room rent x 5 rooms x 12 / price) per district.
+- `council_rules.json` holds each town's Article 4 and additional/selective licensing position,
+  shown as a "Local HMO rules" box. Checked September 2026 – re-check every six months and update
+  the `checked` date.
+- If the `ANTHROPIC_API_KEY` secret is set, each town report gets a short AI-written "Our view"
+  section based only on that report's figures (model via optional `ANTHROPIC_MODEL`, default
+  `claude-sonnet-5`). Without the key the section is simply left out.
+
 ## Publishing to Wix
 After the PDFs are built, `wix_publish.py` uploads them to the Wix Media Manager
 ("Market Reports" folder) and updates a Wix CMS collection called **MarketReports**:
@@ -82,5 +94,7 @@ add two GitHub secrets: `WIX_API_KEY` (the key) and `WIX_SITE_ID` (the ID after
 - `scrape.py` – the scraper (`--dry-run`, `--area`, `--ad-type`, `--max-pages` for testing)
 - `schema.sql` – full database schema; safe to re-run
 - `report.py` – monthly PDF report generator
+- `landreg.py` – loads Land Registry sold prices into market.house_prices
+- `council_rules.json` – local Article 4 / licensing rules per town
 - `wix_publish.py` – uploads the PDFs to Wix and updates the MarketReports collection
 - `brand/` – banner and logo used in the reports
