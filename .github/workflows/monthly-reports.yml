@@ -14,9 +14,15 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12", cache: pip }
       - run: pip install -r requirements.txt
+      - name: Load Land Registry house prices
+        run: python landreg.py
+        continue-on-error: true   # reports still build (without prices) if the download fails
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: python report.py --all
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional: enables the "Our view" commentary
       - name: Publish to Wix
         run: python wix_publish.py
         env:
