@@ -10,7 +10,7 @@ Usage:
     python report.py --national                 # national report only
     python report.py --town HotTown --label "Sample Town" --sample   # watermarked preview
 """
-import argparse, datetime as dt, io, os, re, statistics
+import argparse, datetime as dt, io, json, os, re, statistics
 
 import matplotlib
 matplotlib.use("Agg")
@@ -664,15 +664,20 @@ def main():
         db = Data(conn)
         bench = db.national_benchmarks()
         towns = db.towns() if args.all else (args.town or [])
+        manifest = []   # read by wix_publish.py
         for t in towns:
             name = args.label or t
             path = os.path.join(folder, f"{slug(name)}-hmo-market-report-{dt.date.today():%Y-%m}.pdf")
             town_report(db, t, path, edition, label=args.label, sample=args.sample, bench=bench)
+            manifest.append({"area": name, "file": os.path.basename(path), "national": False})
             print("wrote", path)
         if args.all or args.national:
             path = os.path.join(folder, f"uk-top-hmo-markets-{dt.date.today():%Y-%m}.pdf")
             national_report(db, path, edition, sample=args.sample)
+            manifest.append({"area": "UK Top HMO Markets", "file": os.path.basename(path), "national": True})
             print("wrote", path)
+    with open(os.path.join(folder, "manifest.json"), "w") as f:
+        json.dump({"edition": edition, "reports": manifest}, f, indent=2)
 
 
 if __name__ == "__main__":

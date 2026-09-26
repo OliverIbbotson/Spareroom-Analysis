@@ -66,8 +66,21 @@ Actions tab); open the finished run and download the `market-reports` bundle at 
     python report.py --town Derby          # one town
     python report.py --national            # national report only
 
+## Publishing to Wix
+After the PDFs are built, `wix_publish.py` uploads them to the Wix Media Manager
+("Market Reports" folder) and updates a Wix CMS collection called **MarketReports**:
+one row per town (plus the national report) with `title`, `area`, `edition`, `pdfUrl`,
+`national` and `published`. Each month the row is overwritten with the newest PDF, so
+a Wix page bound to that collection always offers the latest edition.
+
+Setup (once): in Wix go to Settings → Advanced → API Keys (manage.wix.com/account/api-keys),
+create a key with **Manage Media Manager** and **Wix Data** permissions for this site, then
+add two GitHub secrets: `WIX_API_KEY` (the key) and `WIX_SITE_ID` (the ID after
+`/dashboard/` in the Wix dashboard URL). Without them the step is skipped.
+
 ## Files
 - `scrape.py` – the scraper (`--dry-run`, `--area`, `--ad-type`, `--max-pages` for testing)
 - `schema.sql` – full database schema; safe to re-run
 - `report.py` – monthly PDF report generator
+- `wix_publish.py` – uploads the PDFs to Wix and updates the MarketReports collection
 - `brand/` – banner and logo used in the reports
