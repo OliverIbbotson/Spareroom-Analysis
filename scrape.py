@@ -181,6 +181,16 @@ def _en_suite(block, attrs):
     return bool(EN_SUITE.search(text)) and not NO_EN_SUITE.search(text)
 
 
+def _agent_name(block, attrs):
+    """Company name shown on agent adverts. Only stored for agents -
+    private landlords' and flatmates' names are never collected."""
+    if attrs.get("advertiser-role") != "agent":
+        return None
+    m = re.search(r'class="advertiser-info__name">\s*([^<]*?)\s*<', block)
+    name = re.sub(r"\s+", " ", html.unescape(m.group(1))).strip() if m else ""
+    return name or None
+
+
 def _avail_date(block):
     m = re.search(r"Available (\d{1,2})(?:st|nd|rd|th) (\w{3}) (\d{4})", block)
     if not m:
@@ -221,6 +231,7 @@ def parse_page(page_html, ad_type):
                 "property_type": a.get("property-type") or None,
                 "rooms_in_property": _int(a.get("rooms-in-property")),
                 "advertiser_role": a.get("advertiser-role") or None,
+                "agent_name": _agent_name(block, a),
                 "room_type_text": room_text,
                 "room_category": cat,
                 "studio": cat == "studio" or bool(STUDIO.search(a.get("title") or "")),
@@ -310,14 +321,14 @@ insert into market.offered_listings (listing_id, search_area, postcode_district,
   property_type, rooms_in_property, advertiser_role, room_type_text, room_category, singles, doubles,
   rate_pcm, headline_rate, headline_period, first_rate_pcm, bills_included, available_now,
   available_from, photos, has_video, brand, early_bird, verified, days_old_at_first_seen,
-  first_seen, last_seen, en_suite, studio)
+  first_seen, last_seen, en_suite, studio, agent_name)
 values (%(listing_id)s, %(area)s, %(postcode_district)s, %(neighbourhood)s, %(property_type)s,
   %(rooms_in_property)s, %(advertiser_role)s, %(room_type_text)s, %(room_category)s, %(singles)s,
   %(doubles)s, %(rate_pcm)s, %(headline_rate)s, %(headline_period)s, %(rate_pcm)s, %(bills_included)s,
   %(available_now)s, %(available_from)s, %(photos)s, %(has_video)s, %(brand)s, %(early_bird)s,
-  %(verified)s, %(days_old)s, %(today)s, %(today)s, %(en_suite)s, %(studio)s)
+  %(verified)s, %(days_old)s, %(today)s, %(today)s, %(en_suite)s, %(studio)s, %(agent_name)s)
 on conflict (listing_id) do update set
-  en_suite = excluded.en_suite, studio = excluded.studio,
+  en_suite = excluded.en_suite, studio = excluded.studio, agent_name = excluded.agent_name,
   last_seen = excluded.last_seen, rate_pcm = excluded.rate_pcm, headline_rate = excluded.headline_rate,
   headline_period = excluded.headline_period, bills_included = excluded.bills_included,
   available_now = excluded.available_now, available_from = excluded.available_from,

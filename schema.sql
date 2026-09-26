@@ -14,7 +14,7 @@ create table if not exists market.offered_listings (
   photos int, has_video boolean, brand text, early_bird boolean, verified boolean,
   days_old_at_first_seen int,
   first_seen date not null, last_seen date not null,
-  en_suite boolean, studio boolean
+  en_suite boolean, studio boolean, agent_name text
 );
 
 create table if not exists market.wanted_listings (
@@ -410,3 +410,167 @@ select date_trunc('week', stat_date)::date as week_start,
         / nullif(avg(live_count) filter (where ad_type = 'offered'), 0), 2) as tenants_per_room
 from market.daily_stats
 group by 1, 2;
+
+-- ---------- up-and-coming markets: ranked on direction of change only ----------
+-- Latest 3 months (h2) vs the 3 months before (h1).
+
+-- Rising cities: smaller markets are allowed in (50+ live rooms, 30+ lets).
+create or replace view market.rising_cities as
+with m as (
+  select * from market.city_metrics
+  where run_days_6m >= 150 and lets_6m >= 30 and live_rooms_avg >= 50),
+r as (
+  select search_area,
+    case when achieved_rent_growth is null then 0.5 else percent_rank() over (partition by achieved_rent_growth is null order by achieved_rent_growth) end as r_arg,
+    case when asking_rent_growth is null then 0.5 else percent_rank() over (partition by asking_rent_growth is null order by asking_rent_growth) end as r_skg,
+    case when wanted_growth is null then 0.5 else percent_rank() over (partition by wanted_growth is null order by wanted_growth) end as r_wg,
+    case when days_to_let_trend is null then 0.5 else percent_rank() over (partition by days_to_let_trend is null order by days_to_let_trend desc) end as r_dtlt,
+    case when rises_per_cut is null then 0.5 else percent_rank() over (partition by rises_per_cut is null order by rises_per_cut) end as r_rpc,
+    case when new_ads_growth is null then 0.5 else percent_rank() over (partition by new_ads_growth is null order by new_ads_growth) end as r_nag,
+    case when live_out_share_trend is null then 0.5 else percent_rank() over (partition by live_out_share_trend is null order by live_out_share_trend) end as r_lot,
+    case when share_6plus_trend is null then 0.5 else percent_rank() over (partition by share_6plus_trend is null order by share_6plus_trend) end as r_6t,
+    achieved_rent_growth, asking_rent_growth, wanted_growth, days_to_let_trend, new_ads_growth, live_rooms_avg
+  from m)
+select rank() over (order by rising_score desc) as position, *
+from (
+  select search_area as city,
+    round((100 * (r_arg * 2 + r_skg + r_wg * 2 + r_dtlt * 2 + r_rpc + r_nag + r_lot + r_6t) / 11)::numeric, 1) as rising_score,
+    achieved_rent_growth, asking_rent_growth, wanted_growth, days_to_let_trend, new_ads_growth, live_rooms_avg
+  from r) s(city, rising_score, achieved_rent_growth, asking_rent_growth, wanted_growth, days_to_let_trend, new_ads_growth, live_rooms_avg)
+order by rising_score desc;
+
+-- Postcode-district trends (all districts with data).
+create or replace view market.district_trends as
+with p as (select current_date - 182 as ws, current_date - 91 as wm),
+ro as (select * from market.area_runs where ad_type = 'offered'),
+l as (
+  select search_area, town, postcode_district,
+    count(*) filter (where let_date < p.wm) as lets_h1,
+    count(*) filter (where let_date >= p.wm) as lets_h2,
+    percentile_cont(0.5) within group (order by days_on_market) filter (where let_date < p.wm) as dtl_h1,
+    percentile_cont(0.5) within group (order by days_on_market) filter (where let_date >= p.wm) as dtl_h2,
+    percentile_cont(0.5) within group (order by rate_pcm) filter (where single_room and let_date < p.wm) as let_rent_h1,
+    percentile_cont(0.5) within group (order by rate_pcm) filter (where single_room and let_date >= p.wm) as let_rent_h2
+  from market.offered_let, p
+  where let_date >= p.ws and postcode_district is not null
+  group by 1, 2, 3),
+o as (
+  select l.search_area, l.postcode_district,
+    count(*) filter (where l.first_seen <> ro.first_run and l.first_seen >= p.ws and l.first_seen < p.wm) as new_h1,
+    count(*) filter (where l.first_seen <> ro.first_run and l.first_seen >= p.wm) as new_h2,
+    count(*) filter (where l.first_seen < p.wm and l.last_seen >= p.ws) as live_h1,
+    count(*) filter (where l.last_seen >= p.wm) as live_h2,
+    count(distinct l.listing_id) filter (where c.change_date >= p.ws and c.change_date < p.wm) as cut_h1,
+    count(distinct l.listing_id) filter (where c.change_date >= p.wm) as cut_h2
+  from market.offered_listings l join ro using (search_area)
+  cross join p
+  left join market.offered_price_changes c on c.listing_id = l.listing_id and c.new_rate_pcm < c.old_rate_pcm
+  where l.last_seen >= p.ws and l.postcode_district is not null
+  group by 1, 2)
+select l.search_area as city, l.town, l.postcode_district,
+  l.lets_h1, l.lets_h2,
+  round((l.lets_h2::numeric / nullif(l.lets_h1, 0) - 1), 3) as lets_growth,
+  round(l.dtl_h1::numeric, 1) as days_to_let_before, round(l.dtl_h2::numeric, 1) as days_to_let_now,
+  round((l.dtl_h2 - l.dtl_h1)::numeric, 1) as days_to_let_change,
+  round(l.let_rent_h1::numeric) as let_rent_before, round(l.let_rent_h2::numeric) as let_rent_now,
+  round((l.let_rent_h2 / nullif(l.let_rent_h1, 0) - 1)::numeric, 3) as rent_growth,
+  round((o.new_h2::numeric / nullif(o.new_h1, 0) - 1), 3) as new_listings_growth,
+  round(o.cut_h1::numeric / nullif(o.live_h1, 0), 3) as cut_rate_before,
+  round(o.cut_h2::numeric / nullif(o.live_h2, 0), 3) as cut_rate_now,
+  (l.lets_h1 >= 10 and l.lets_h2 >= 10) as enough_data
+from l left join o on o.search_area = l.search_area and o.postcode_district = l.postcode_district;
+
+-- Rising postcode districts, ranked nationally and within each city.
+create or replace view market.rising_districts as
+with d as (select * from market.district_trends where enough_data),
+r as (
+  select *,
+    case when rent_growth is null then 0.5 else percent_rank() over (partition by rent_growth is null order by rent_growth) end as r_rent,
+    case when days_to_let_change is null then 0.5 else percent_rank() over (partition by days_to_let_change is null order by days_to_let_change desc) end as r_dtl,
+    case when lets_growth is null then 0.5 else percent_rank() over (partition by lets_growth is null order by lets_growth) end as r_lets,
+    case when cut_rate_now is null or cut_rate_before is null then 0.5
+         else percent_rank() over (partition by cut_rate_now is null or cut_rate_before is null order by cut_rate_now - cut_rate_before desc) end as r_cut,
+    case when new_listings_growth is null then 0.5 else percent_rank() over (partition by new_listings_growth is null order by new_listings_growth) end as r_new
+  from d),
+s as (
+  select *, round((100 * (r_rent * 3 + r_dtl * 2 + r_lets * 2 + r_cut + r_new) / 9)::numeric, 1) as rising_score from r)
+select rank() over (order by rising_score desc) as national_position,
+  rank() over (partition by city order by rising_score desc) as position_in_city,
+  city, town, postcode_district, rising_score,
+  rent_growth, let_rent_before, let_rent_now, days_to_let_before, days_to_let_now,
+  lets_growth, cut_rate_before, cut_rate_now, new_listings_growth, lets_h1, lets_h2
+from s order by rising_score desc;
+
+
+-- ---------- agent market share (agent adverts only, using the company names shown on SpareRoom) ----------
+alter table market.offered_listings add column if not exists agent_name text;
+
+-- Normalised company key so "Clayton & Co" / "CLAYTON & CO LTD" count as one agent.
+create or replace function market.agent_key(n text) returns text language sql immutable as $$
+  select nullif(regexp_replace(
+    regexp_replace(lower(coalesce(n, '')), '\m(ltd|limited|llp|plc|and)\M', '', 'g'),
+    '[^a-z0-9]', '', 'g'), '')
+$$;
+
+create or replace view market.agent_share as
+with r as (select * from market.area_runs where ad_type = 'offered'),
+b as (
+  select l.*, r.last_run,
+    case when l.postcode_district = 'NG10' then 'Long Eaton'
+         when l.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+         else l.search_area end as town,
+    market.agent_key(l.agent_name) as agent_key,
+    greatest(coalesce(l.singles, 0) + coalesce(l.doubles, 0), 1) as rooms,
+    (l.last_seen - l.first_seen) + coalesce(l.days_old_at_first_seen, 0) as days_on_market,
+    (l.room_category in ('single','double') and coalesce(l.singles,0) + coalesce(l.doubles,0) = 1) as single_room
+  from market.offered_listings l join r using (search_area)
+  where l.last_seen >= current_date - 182),
+totals as (select town, sum(rooms) filter (where last_seen = last_run) as all_live_rooms from b group by town),
+a as (
+  select town, agent_key,
+    mode() within group (order by agent_name) as agent,
+    count(*) filter (where last_seen = last_run) as live_adverts,
+    coalesce(sum(rooms) filter (where last_seen = last_run), 0) as live_rooms,
+    coalesce(sum(rooms) filter (where last_seen < last_run), 0) as rooms_let_6m,
+    percentile_cont(0.5) within group (order by days_on_market) filter (where last_seen < last_run) as median_days_to_let,
+    percentile_cont(0.5) within group (order by rate_pcm) filter (where single_room and last_seen = last_run) as median_asking_pcm,
+    avg(photos) filter (where last_seen = last_run) as avg_photos
+  from b where agent_key is not null group by town, agent_key)
+select a.town, rank() over (partition by a.town order by a.live_rooms desc, a.rooms_let_6m desc) as position,
+  a.agent, a.live_adverts, a.live_rooms,
+  round(a.live_rooms::numeric / nullif(sum(a.live_rooms) over (partition by a.town), 0), 3) as share_of_agent_rooms,
+  round(a.live_rooms::numeric / nullif(t.all_live_rooms, 0), 3) as share_of_all_rooms,
+  a.rooms_let_6m,
+  round(a.rooms_let_6m::numeric / nullif(sum(a.rooms_let_6m) over (partition by a.town), 0), 3) as share_of_agent_lets_6m,
+  round(a.median_days_to_let::numeric, 1) as median_days_to_let,
+  round(a.median_asking_pcm::numeric) as median_asking_pcm,
+  round(a.avg_photos, 1) as avg_photos,
+  (a.agent_key = 'houseshareheroes') as is_houseshare_heroes
+from a join totals t using (town)
+where a.live_rooms > 0 or a.rooms_let_6m > 0;
+
+-- How concentrated each local letting-agent market is (a fragmented market = room for a newcomer).
+create or replace view market.agent_concentration as
+with s as (select * from market.agent_share),
+t as (
+  select l.town, sum(greatest(coalesce(l.singles,0) + coalesce(l.doubles,0), 1)) as all_live_rooms
+  from (select o.*, case when o.postcode_district = 'NG10' then 'Long Eaton'
+               when o.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+               else o.search_area end as town
+        from market.offered_listings o) l
+  join market.area_runs r on r.search_area = l.search_area and r.ad_type = 'offered'
+  where l.last_seen = r.last_run group by l.town)
+select s.town,
+  count(*) filter (where s.live_rooms > 0) as active_agents,
+  sum(s.live_rooms) as agent_live_rooms,
+  round(sum(s.live_rooms)::numeric / nullif(max(t.all_live_rooms), 0), 3) as agent_share_of_market,
+  round(sum(s.share_of_agent_rooms) filter (where s.position = 1), 3) as top1_share,
+  round(sum(s.share_of_agent_rooms) filter (where s.position <= 3), 3) as top3_share,
+  round(sum(s.share_of_agent_rooms) filter (where s.position <= 5), 3) as top5_share,
+  round(sum(power(s.share_of_agent_rooms * 100, 2))) as hhi,
+  max(s.agent) filter (where s.position = 1) as largest_agent,
+  sum(s.live_rooms) filter (where s.is_houseshare_heroes) as hsh_live_rooms,
+  max(s.share_of_agent_rooms) filter (where s.is_houseshare_heroes) as hsh_share_of_agent_rooms,
+  min(s.position) filter (where s.is_houseshare_heroes) as hsh_position
+from s join t using (town)
+group by s.town;
