@@ -13,7 +13,8 @@ create table if not exists market.offered_listings (
   bills_included boolean, available_now boolean, available_from date,
   photos int, has_video boolean, brand text, early_bird boolean, verified boolean,
   days_old_at_first_seen int,
-  first_seen date not null, last_seen date not null
+  first_seen date not null, last_seen date not null,
+  en_suite boolean, studio boolean
 );
 
 create table if not exists market.wanted_listings (
@@ -24,6 +25,7 @@ create table if not exists market.wanted_listings (
   available_now boolean, early_bird boolean, brand text,
   days_old_at_first_seen int,
   first_seen date not null, last_seen date not null,
+  en_suite boolean, studio boolean,
   primary key (listing_id, search_area)
 );
 
@@ -81,12 +83,18 @@ create trigger trg_log_price_change after update of rate_pcm on market.offered_l
   for each row execute function market.log_price_change();
 
 -- ---------- base views ----------
-create or replace view market.towns as
-select o.*, case
-  when postcode_district = 'NG10' then 'Long Eaton'
-  when postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
-  else search_area end as town
-from market.offered_listings o;
+-- Created once only: its column list is fixed at creation, so it is not replaced on re-runs.
+do $do$ begin
+  if not exists (select 1 from pg_views where schemaname = 'market' and viewname = 'towns') then
+    execute $v$
+      create view market.towns as
+      select o.*, case
+        when postcode_district = 'NG10' then 'Long Eaton'
+        when postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+        else search_area end as town
+      from market.offered_listings o $v$;
+  end if;
+end $do$;
 
 create or replace view market.area_runs as
 select search_area, ad_type,
@@ -305,3 +313,100 @@ order by opportunity_score desc limit 10;
 create or replace view market.city_ranking_provisional as
 select rank() over (order by opportunity_score desc) as position, *
 from market.city_ranking order by opportunity_score desc;
+
+-- ---------- en-suite & studio (flagged from the advert headline / short description) ----------
+alter table market.offered_listings add column if not exists en_suite boolean;
+alter table market.wanted_listings add column if not exists en_suite boolean;
+alter table market.offered_listings add column if not exists studio boolean;
+alter table market.wanted_listings add column if not exists studio boolean;
+update market.offered_listings set room_category = 'studio'
+  where room_type_text ilike '%studio%' and room_category is distinct from 'studio';
+
+-- Views below are dropped and rebuilt so new table columns flow through.
+drop view if exists market.en_suite_summary;
+drop view if exists market.premium_rooms_summary;
+drop view if exists market.room_type_stats;
+drop view if exists market.room_types;
+
+-- The room types used in the original area reports, plus Studio.
+create view market.room_types as
+select t.*,
+  case when t.postcode_district = 'NG10' then 'Long Eaton'
+       when t.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+       else t.search_area end as town,
+  case when t.room_category = 'studio' or t.studio then 'Studio'
+       when t.room_category = 'single' and t.en_suite then 'Single En Suite'
+       when t.room_category = 'single' then 'Single'
+       when t.room_category = 'double' and t.en_suite then 'Double En Suite'
+       when t.room_category = 'double' then 'Double' end as room_type
+from market.offered_listings t
+where (t.room_category in ('single','double') and coalesce(t.singles,0) + coalesce(t.doubles,0) = 1)
+   or t.room_category = 'studio'
+   or (t.studio and t.room_type_text ilike '1 bed%');
+
+-- Per city/town and room type: share of rooms, asking rent, days to let (last 6 months).
+create view market.room_type_stats as
+with r as (select * from market.area_runs where ad_type = 'offered'),
+live as (
+  select rt.town, rt.room_type, count(*) as live_rooms,
+    percentile_cont(0.5) within group (order by rt.rate_pcm) as median_asking_pcm,
+    avg(rt.rate_pcm) filter (where rt.rate_pcm between 150 and 2500) as mean_asking_pcm
+  from market.room_types rt join r using (search_area)
+  where rt.last_seen = r.last_run group by 1, 2),
+lets as (
+  select rt.town, rt.room_type, count(*) as lets_6m,
+    percentile_cont(0.5) within group (order by (rt.last_seen - rt.first_seen) + coalesce(rt.days_old_at_first_seen,0)) as median_days_to_let,
+    percentile_cont(0.5) within group (order by rt.rate_pcm) as median_let_pcm
+  from market.room_types rt join r using (search_area)
+  where rt.last_seen < r.last_run and rt.last_seen >= current_date - 182 group by 1, 2)
+select coalesce(live.town, lets.town) as town, coalesce(live.room_type, lets.room_type) as room_type,
+  coalesce(live.live_rooms, 0) as live_rooms,
+  round(coalesce(live.live_rooms, 0)::numeric / nullif(sum(coalesce(live.live_rooms, 0)) over (partition by coalesce(live.town, lets.town)), 0), 3) as share_of_live,
+  round(live.median_asking_pcm::numeric) as median_asking_pcm,
+  coalesce(lets.lets_6m, 0) as lets_6m,
+  round(lets.median_days_to_let::numeric, 1) as median_days_to_let,
+  round(lets.median_let_pcm::numeric) as median_let_pcm,
+  round(live.mean_asking_pcm::numeric) as mean_asking_pcm
+from live full join lets on live.town = lets.town and live.room_type = lets.room_type;
+
+-- En-suite and studio: supply vs tenant demand, and rent premium over a standard double.
+create view market.premium_rooms_summary as
+with r as (select * from market.area_runs where ad_type = 'offered'),
+o as (
+  select rt.search_area,
+    avg((rt.room_type like '%En Suite')::int) filter (where rt.en_suite is not null) as en_suite_share_of_rooms,
+    avg((rt.room_type = 'Studio')::int) filter (where rt.studio is not null) as studio_share_of_rooms,
+    percentile_cont(0.5) within group (order by rt.rate_pcm) filter (where rt.room_type = 'Double') as double_pcm,
+    percentile_cont(0.5) within group (order by rt.rate_pcm) filter (where rt.room_type = 'Double En Suite') as double_en_suite_pcm,
+    percentile_cont(0.5) within group (order by rt.rate_pcm) filter (where rt.room_type = 'Studio') as studio_pcm
+  from market.room_types rt join r using (search_area)
+  where rt.last_seen = r.last_run group by 1),
+w as (
+  select search_area,
+    avg(en_suite::int) as en_suite_share_of_wanted,
+    avg(studio::int) as studio_share_of_wanted
+  from market.wanted_listings where last_seen >= current_date - 182 and en_suite is not null group by 1)
+select o.search_area as city,
+  round(o.double_pcm::numeric) as double_pcm,
+  round(o.en_suite_share_of_rooms, 3) as en_suite_share_of_rooms,
+  round(w.en_suite_share_of_wanted, 3) as en_suite_share_of_wanted,
+  round(o.double_en_suite_pcm::numeric) as double_en_suite_pcm,
+  round((o.double_en_suite_pcm - o.double_pcm)::numeric) as en_suite_premium_pcm,
+  round(o.studio_share_of_rooms, 3) as studio_share_of_rooms,
+  round(w.studio_share_of_wanted, 3) as studio_share_of_wanted,
+  round(o.studio_pcm::numeric) as studio_pcm,
+  round((o.studio_pcm - o.double_pcm)::numeric) as studio_premium_pcm
+from o left join w using (search_area);
+
+-- Weekly rooms available vs tenants looking, per city.
+create or replace view market.supply_vs_demand as
+select date_trunc('week', stat_date)::date as week_start,
+  search_area as city,
+  round(avg(live_count) filter (where ad_type = 'offered')) as rooms_available,
+  max(live_count) filter (where ad_type = 'wanted') as tenants_looking,
+  sum(new_count) filter (where ad_type = 'offered') as new_rooms_listed,
+  max(new_count) filter (where ad_type = 'wanted') as new_tenant_ads,
+  round(max(live_count) filter (where ad_type = 'wanted')::numeric
+        / nullif(avg(live_count) filter (where ad_type = 'offered'), 0), 2) as tenants_per_room
+from market.daily_stats
+group by 1, 2;
