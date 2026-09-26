@@ -574,3 +574,17 @@ select s.town,
   min(s.position) filter (where s.is_houseshare_heroes) as hsh_position
 from s join t using (town)
 group by s.town;
+
+-- HM Land Registry sold prices (last 12 months), loaded monthly by landreg.py
+create table if not exists market.house_prices (
+  area_type    text not null,          -- 'district' or 'town'
+  area         text not null,
+  period_start date not null,
+  period_end   date not null,
+  median_ts    numeric,                -- terraced + semi-detached
+  n_ts         int,
+  median_all   numeric,
+  n_all        int,
+  updated      timestamptz not null default now(),
+  primary key (area_type, area)
+);
