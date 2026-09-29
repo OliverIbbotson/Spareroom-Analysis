@@ -17,6 +17,8 @@ import requests
 BASE = "https://www.spareroom.co.uk"
 DELAY_SECONDS = float(os.environ.get("DELAY_SECONDS", "2.5"))
 MAX_PAGES = 250  # safety cap per area/ad type
+AREA_MINUTES = float(os.environ.get("AREA_MINUTES", "40"))   # give up on one area after this long
+RUN_MINUTES = float(os.environ.get("RUN_MINUTES", "300"))    # stop cleanly before the 330-min job timeout
 CONTACT = os.environ.get("CONTACT_EMAIL", "")
 USER_AGENT = f"HSH-MarketResearch/1.0 (Houseshare Heroes daily market research{'; ' + CONTACT if CONTACT else ''})"
 
@@ -262,10 +264,18 @@ PAGE_CAP = 100      # SpareRoom stops paging after 100 pages (1,000 results)
 SPLIT_AT = 950      # areas with more live rooms than this are read district by district
 
 
-def scrape_path(path, ad_type, max_pages, first_html=None):
+class OutOfTime(Exception):
+    def __init__(self, msg, seen=None, pages=0):
+        super().__init__(msg)
+        self.seen, self.pages = seen or {}, pages
+
+
+def scrape_path(path, ad_type, max_pages, first_html=None, deadline=None):
     """Page through one search (e.g. flatshare/derby or flatshare/b29)."""
     seen, pages = {}, 0
     for page in range(1, max_pages + 1):
+        if deadline and time.time() > deadline:
+            raise OutOfTime(f"stopped after {AREA_MINUTES:.0f} minutes at {path} page {page}", seen, pages)
         if page == 1 and first_html is not None:
             body = first_html
         else:
@@ -285,6 +295,7 @@ def scrape_path(path, ad_type, max_pages, first_html=None):
 
 def scrape(slug, ad_type, max_pages):
     """Returns (rows, pages, note)."""
+    deadline = time.time() + AREA_MINUTES * 60
     path = f"{AD_TYPES[ad_type]}/{slug}"
     first = fetch(f"{BASE}/{path}")
     time.sleep(DELAY_SECONDS)
@@ -300,14 +311,30 @@ def scrape(slug, ad_type, max_pages):
         prefix = letters.group(1).lower()
         seen, pages = {}, 0
         for n in range(1, 100):
-            rows, p = scrape_path(f"flatshare/{prefix}{n}", ad_type, max_pages)
+            try:
+                rows, p = scrape_path(f"flatshare/{prefix}{n}", ad_type, max_pages, deadline=deadline)
+            except OutOfTime as e:
+                for k, v in e.seen.items():
+                    seen.setdefault(k, v)
+                pages += e.pages
+                if not seen:
+                    raise
+                note = f"district mode stopped early ({e}): {len(seen)} of {total} advertised"
+                return list(seen.values()), pages, note
             for k, v in rows.items():
                 seen.setdefault(k, v)
             pages += max(p, 1)
+            if n % 10 == 0:
+                print(f"  {prefix}{n}: {len(seen)} listings so far", file=sys.stderr, flush=True)
         note = f"district mode: {len(seen)} of {total} advertised"
         return list(seen.values()), pages, note
 
-    seen, pages = scrape_path(path, ad_type, max_pages, first_html=first)
+    try:
+        seen, pages = scrape_path(path, ad_type, max_pages, first_html=first, deadline=deadline)
+    except OutOfTime as e:
+        if not e.seen:
+            raise
+        return list(e.seen.values()), e.pages, f"stopped early ({e}) - results incomplete"
     note = None
     if pages >= PAGE_CAP:
         note = f"hit SpareRoom's {PAGE_CAP}-page cap - results may be incomplete"
@@ -384,25 +411,37 @@ def main():
     robots.read()
     today = dt.date.today().isoformat()
     areas = {k: v for k, v in AREAS.items() if not args.area or k in args.area}
-    conn = None
-    if not args.dry_run:
+    live = not args.dry_run
+    if live:
         import psycopg
-        conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
 
+    def connect():
+        # A fresh connection per step: Neon suspends idle computes and drops long-idle
+        # connections, and big areas can take 10+ minutes to scrape.
+        return psycopg.connect(os.environ["DATABASE_URL"], autocommit=True, connect_timeout=30)
+
+    started = time.time()
     failures = []
     for area, slug in areas.items():
+        if time.time() - started > RUN_MINUTES * 60:
+            failures.append(f"{area} onwards: skipped - run reached its {RUN_MINUTES:.0f}-minute limit")
+            print(failures[-1], file=sys.stderr, flush=True)
+            break
         for ad_type in (args.ad_type or AD_TYPES):
             run_id = None
-            if conn:
-                run_id = conn.execute(
-                    "insert into market.scrape_runs (run_date, search_area, ad_type) values (%s,%s,%s) returning run_id",
-                    (today, area, ad_type)).fetchone()[0]
+            if live:
+                with connect() as conn:
+                    run_id = conn.execute(
+                        "insert into market.scrape_runs (run_date, search_area, ad_type) values (%s,%s,%s) returning run_id",
+                        (today, area, ad_type)).fetchone()[0]
+            print(f"{area} {ad_type}: starting", file=sys.stderr, flush=True)
             try:
                 rows, pages, note = scrape(slug, ad_type, args.max_pages)
                 if not rows:
                     raise RuntimeError("no listings parsed - page layout may have changed")
-                if conn:
-                    save(conn, area, ad_type, rows, pages, today, run_id, note)
+                if live:
+                    with connect() as conn:
+                        save(conn, area, ad_type, rows, pages, today, run_id, note)
                 else:
                     print(json.dumps({"area": area, "ad_type": ad_type, "pages": pages, "note": note,
                                       "listings": len(rows), "sample": rows[:2]}, indent=1, default=str))
@@ -410,9 +449,14 @@ def main():
             except Exception as e:
                 status = "blocked" if isinstance(e, Blocked) else "failed"
                 failures.append(f"{area} {ad_type}: {status} - {e}")
-                if conn:
-                    conn.execute("update market.scrape_runs set status=%s, error=%s, finished_at=now() where run_id=%s",
-                                 (status, str(e)[:500], run_id))
+                print(f"{area} {ad_type}: {status} - {e}", file=sys.stderr, flush=True)
+                if live and run_id:
+                    try:
+                        with connect() as conn:
+                            conn.execute("update market.scrape_runs set status=%s, error=%s, finished_at=now() where run_id=%s",
+                                         (status, str(e)[:500], run_id))
+                    except Exception as db_err:  # never let logging a failure stop the run
+                        print(f"  could not record failure: {db_err}", file=sys.stderr, flush=True)
                 if isinstance(e, Blocked):
                     break  # leave this area alone for today
             time.sleep(DELAY_SECONDS)
