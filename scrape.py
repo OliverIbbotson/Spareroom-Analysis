@@ -23,8 +23,9 @@ CONTACT = os.environ.get("CONTACT_EMAIL", "")
 USER_AGENT = f"HSH-MarketResearch/1.0 (Houseshare Heroes daily market research{'; ' + CONTACT if CONTACT else ''})"
 
 # Display name -> SpareRoom search slug. Most slugs cover the whole postcode area
-# (e.g. derby = all DE). Long Eaton (NG10) and Burton (DE13-15) come through the
-# Nottingham and Derby searches and are split out by postcode in `market.towns`.
+# (e.g. derby = all DE). Long Eaton (NG10), Burton (DE13-15) and Coalville (LE67)
+# come through the Nottingham, Derby and Leicester searches and are split out by
+# postcode in `market.towns`.
 # London is deliberately excluded: it is larger than all other areas combined.
 AREAS = {
     "Birmingham": "birmingham",

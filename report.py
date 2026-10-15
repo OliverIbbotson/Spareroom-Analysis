@@ -49,9 +49,11 @@ except (OSError, ValueError):
     COUNCIL = {"towns": {}}
 
 SUB_TOWNS = {"Long Eaton": ("Nottingham", ["NG10"]),
-             "Burton upon Trent": ("Derby", ["DE13", "DE14", "DE15"])}
+             "Burton upon Trent": ("Derby", ["DE13", "DE14", "DE15"]),
+             "Coalville": ("Leicester", ["LE67"])}
 TOWN_SQL = ("case when postcode_district = 'NG10' then 'Long Eaton' "
             "when postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent' "
+            "when postcode_district = 'LE67' then 'Coalville' "
             "else search_area end")
 
 

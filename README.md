@@ -18,8 +18,8 @@ upon Tyne, Sunderland, Middlesbrough, Hull, Bradford, Huddersfield, Wakefield, Y
 Doncaster, Preston, Bolton, Blackpool, Stockport, Oldham, Warrington, Chester, Telford,
 Worcester, Gloucester, Northampton, Peterborough, Milton Keynes, Luton, Reading, Oxford,
 Cambridge, Norwich, Ipswich, Southampton, Portsmouth, Brighton, Exeter, Plymouth,
-Cardiff, Swansea, Newport, Glasgow, Edinburgh. Long Eaton and Burton upon Trent are
-split out by postcode in `market.towns`. Edit `AREAS` in scrape.py to add or remove.
+Cardiff, Swansea, Newport, Glasgow, Edinburgh. Long Eaton, Burton upon Trent and Coalville
+are split out by postcode in `market.towns`. Edit `AREAS` in scrape.py to add or remove.
 
 ## Setup
 1. Create a GitHub repository and upload these files (keep the `.github/workflows` folder).

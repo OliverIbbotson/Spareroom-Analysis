@@ -794,6 +794,20 @@
         "https://www.eaststaffsbc.gov.uk/housing-and-property/landlords/selective-licensing-scheme"
       ],
       "confidence": "medium"
+    },
+    "Coalville": {
+      "council": "North West Leicestershire District Council",
+      "article4": "no",
+      "article4_detail": "The district's only HMO Article 4 Direction covers Kegworth (since February 2021); Coalville is not included.",
+      "additional_licensing": "no",
+      "additional_detail": "Mandatory licensing only.",
+      "selective_licensing": "no",
+      "selective_detail": "No selective licensing scheme.",
+      "other_notes": "",
+      "sources": [
+        "https://nwleics.gov.uk/pages/kegwortharticle4"
+      ],
+      "confidence": "medium"
     }
   }
 }

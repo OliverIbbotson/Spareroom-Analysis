@@ -91,6 +91,7 @@ do $do$ begin
       select o.*, case
         when postcode_district = 'NG10' then 'Long Eaton'
         when postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+        when postcode_district = 'LE67' then 'Coalville'
         else search_area end as town
       from market.offered_listings o $v$;
   end if;
@@ -333,6 +334,7 @@ create view market.room_types as
 select t.*,
   case when t.postcode_district = 'NG10' then 'Long Eaton'
        when t.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+       when t.postcode_district = 'LE67' then 'Coalville'
        else t.search_area end as town,
   case when t.room_category = 'studio' or t.studio then 'Studio'
        when t.room_category = 'single' and t.en_suite then 'Single En Suite'
@@ -518,6 +520,7 @@ b as (
   select l.*, r.last_run,
     case when l.postcode_district = 'NG10' then 'Long Eaton'
          when l.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+         when l.postcode_district = 'LE67' then 'Coalville'
          else l.search_area end as town,
     market.agent_key(l.agent_name) as agent_key,
     greatest(coalesce(l.singles, 0) + coalesce(l.doubles, 0), 1) as rooms,
@@ -556,6 +559,7 @@ t as (
   select l.town, sum(greatest(coalesce(l.singles,0) + coalesce(l.doubles,0), 1)) as all_live_rooms
   from (select o.*, case when o.postcode_district = 'NG10' then 'Long Eaton'
                when o.postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent'
+               when o.postcode_district = 'LE67' then 'Coalville'
                else o.search_area end as town
         from market.offered_listings o) l
   join market.area_runs r on r.search_area = l.search_area and r.ad_type = 'offered'

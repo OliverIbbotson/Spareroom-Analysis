@@ -22,6 +22,7 @@ import requests
 BASE = "http://prod.publicdata.landregistry.gov.uk.s3-website-eu-west-1.amazonaws.com"
 TOWN_SQL = ("case when postcode_district = 'NG10' then 'Long Eaton' "
             "when postcode_district in ('DE13','DE14','DE15') then 'Burton upon Trent' "
+            "when postcode_district = 'LE67' then 'Coalville' "
             "else search_area end")
 
 DDL = """
